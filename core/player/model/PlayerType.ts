@@ -4,53 +4,53 @@
  */
 export interface PlayerType {
     /**
-     * Unique identifier for the player (UUID).
+     * 🔹 Unique identifier for the player (UUID).
      */
     id: string;
 
     /**
-     * Player's email address, used for authentication.
+     * 🔹 Player's email address, used for authentication.
      */
     email: string;
 
     /**
-     * Username of the player (derived from email initially).
+     * 🔹 Username of the player (derived from email initially).
      */
     username: string;
 
     /**
-     * Display name of the player (can be changed by the player).
+     * 🔹 Display name of the player (can be changed by the player).
      */
     displayName: string;
 
     /**
-     * Whether the player is currently banned from the system.
+     * 🛑 Whether the player is currently banned from the system.
      */
     isBanned: boolean;
 
     /**
-     * The reason for the ban, if the player is banned.
+     * 🛑 The reason for the ban, if the player is banned.
      */
     banReason?: string | null;
 
     /**
-     * The administrator who issued the ban.
+     * 🛑 The administrator who issued the ban.
      */
     bannedBy?: string | null;
 
     /**
-     * The date and time until the ban remains active (null means permanent ban).
+     * 🛑 The date and time until the ban remains active (null means permanent ban).
      */
     banUntil?: Date | null;
 
     /**
-     * The global roles assigned to the player.
+     * 🔹 The global roles assigned to the player.
      * Examples: ['PLAYER'], ['PLAYER', 'ADMIN']
      */
     globalRoles: string[];
 
     /**
-     * History of administrative actions taken on the player.
+     * 🔹 History of administrative actions taken on the player.
      * Stores an array of past bans, unbans, warnings, etc.
      */
     adminHistory?: {
@@ -60,7 +60,14 @@ export interface PlayerType {
     }[];
 
     /**
-     * Future extension for faction-specific roles.
+     * 🎮 Game-specific IDs associated with the player.
+     * Supports multiple game engines (e.g., Arma 3 GUID, GTA 5 ID, etc.).
+     * Example: { "arma3": "12345678901234567890", "gta5": "ABCD-EFGH-IJKL" }
+     */
+    gameIds?: { [game: string]: string };
+
+    /**
+     * 🏛️ Future extension for faction-specific roles.
      * Example: { "factionId1": ["LEADER"], "factionId2": ["MEMBER"] }
      */
     // factionRoles?: { [factionId: string]: string[] };

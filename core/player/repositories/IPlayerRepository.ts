@@ -1,65 +1,53 @@
-/**
- * 🗂️ IPlayerRepository.ts - Defines the interface for player data access.
- *
- * This interface allows multiple implementations (e.g., InMemory, JSON, Database)
- * while ensuring all follow a standard contract.
- */
-
+// core/player/repositories/IPlayerRepository.ts
 import { PlayerType } from '../model/PlayerType';
 
+/**
+ * 📦 Player Repository Interface
+ * - Defines methods for managing players across different storage backends.
+ */
 export interface IPlayerRepository {
     /**
-     * 🔍 Find a player by their email.
-     * @param email The email address of the player.
-     * @returns The player object or `null` if not found.
-     */
-    findByEmail(email: string): Promise<PlayerType | null>;
-
-    /**
-     * 🔍 Find a player by their unique ID.
-     * @param id The unique player ID.
-     * @returns The player object or `null` if not found.
+     * 🔍 Find a player by their unique database ID (UUID)
      */
     findById(id: string): Promise<PlayerType | null>;
 
     /**
-     * ➕ Create a new player.
-     * @param player The player data to create.
-     * @returns The newly created player object.
+     * 📧 Find a player by email (used for authentication)
+     */
+    findByEmail(email: string): Promise<PlayerType | null>;
+
+    /**
+     * 🎮 Find a player by their game-specific ID (e.g., Steam ID, Arma GUID)
+     */
+    findByGameId(gameId: string): Promise<PlayerType | null>;
+
+    /**
+     * ➕ Create a new player
      */
     create(player: Omit<PlayerType, 'id'>): Promise<PlayerType>;
 
     /**
-     * 🔄 Update an existing player's information.
-     * @param player The player object containing updated data.
+     * ✏️ Update an existing player's details
      */
     update(player: PlayerType): Promise<void>;
 
     /**
-     * 🚫 Ban a player.
-     * @param playerId The ID of the player to ban.
-     * @param reason The reason for the ban.
-     * @param bannedBy The admin or system user performing the ban.
-     * @param bannedUntil (Optional) Expiration date of the ban (null for permanent bans).
+     * 🚫 Ban a player
      */
-    banPlayer(playerId: string, reason: string, bannedBy: string, bannedUntil?: Date | null): Promise<void>;
+    banPlayer(playerId: string, reason: string, bannedBy: string, banUntil: Date | null): Promise<void>;
 
     /**
-     * ✅ Unban a player.
-     * @param playerId The ID of the player to unban.
+     * ✅ Unban a player
      */
     unbanPlayer(playerId: string): Promise<void>;
 
     /**
-     * 🔍 Check if a player is currently banned.
-     * @param playerId The ID of the player.
-     * @returns `true` if the player is banned, otherwise `false`.
+     * 🔍 Check if a player is banned
      */
     isPlayerBanned(playerId: string): Promise<boolean>;
 
     /**
-     * 📜 Get a list of all banned players.
-     * @returns An array of player objects that are currently banned.
+     * 📜 Get a list of all banned players
      */
     getBannedPlayers(): Promise<PlayerType[]>;
 }

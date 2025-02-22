@@ -2,52 +2,49 @@ import { Request, Response } from 'express';
 import { AdminService } from '../../core/admin/services/AdminService';
 import { InMemoryAdminRepository } from '../../core/admin/repositories/InMemoryAdminRepository';
 
-// 🛠 Create an instance of AdminService
 const adminService = new AdminService(new InMemoryAdminRepository());
 
 /**
- * ➕ Add an admin
+ * 🚫 Ban a player
  */
-export async function addAdmin(req: Request, res: Response) {
-    const { playerId } = req.body;
-    if (!playerId) {
-        return res.status(400).json({ message: 'Player ID is required' });
-    }
+export async function banPlayer(req: Request, res: Response) {
+    const { playerId, reason, bannedBy, banUntil } = req.body;
 
-    await adminService.addAdmin(playerId);
-    res.status(200).json({ message: 'Admin added successfully' });
+    try {
+        await adminService.banPlayer(playerId, reason, bannedBy, banUntil ? new Date(banUntil) : null);
+        res.status(200).json({ message: 'Player banned successfully' });
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
+    }
 }
 
 /**
- * ❌ Remove an admin
+ * ✅ Unban a player
  */
-export async function removeAdmin(req: Request, res: Response) {
-    const { playerId } = req.body;
-    if (!playerId) {
-        return res.status(400).json({ message: 'Player ID is required' });
-    }
+export async function unbanPlayer(req: Request, res: Response) {
+    const { playerId, unbannedBy } = req.body;
 
-    await adminService.removeAdmin(playerId);
-    res.status(200).json({ message: 'Admin removed successfully' });
+    try {
+        await adminService.unbanPlayer(playerId, unbannedBy);
+        res.status(200).json({ message: 'Player unbanned successfully' });
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
+    }
 }
 
 /**
- * 🔍 Check if a player is an admin
+ * 🔍 Find a player by email, username, or game ID
  */
-export async function isAdmin(req: Request, res: Response) {
-    const { playerId } = req.params;
-    if (!playerId) {
-        return res.status(400).json({ message: 'Player ID is required' });
+export async function findPlayer(req: Request, res: Response) {
+    const { identifier } = req.params;
+
+    try {
+        const player = await adminService.findPlayer(identifier);
+        if (!player) {
+            return res.status(404).json({ message: 'Player not found' });
+        }
+        res.status(200).json(player);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
-
-    const result = await adminService.isAdmin(playerId);
-    res.status(200).json({ isAdmin: result });
-}
-
-/**
- * 📜 Get all admins
- */
-export async function getAllAdmins(req: Request, res: Response) {
-    const admins = await adminService.getAllAdmins();
-    res.status(200).json({ admins });
 }

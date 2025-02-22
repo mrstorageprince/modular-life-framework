@@ -1,101 +1,90 @@
+// core/player/repositories/InMemoryPlayerRepository.ts
 import { IPlayerRepository } from './IPlayerRepository';
 import { PlayerType } from '../model/PlayerType';
 import { v4 as uuidv4 } from 'uuid';
-import { PlayerList } from '../../admin/storage/playerList';
-import { BanList } from '../../admin/storage/banList';
+import * as playerList from '../../admin/storage/playerList';
+import * as banList from '../../admin/storage/banList';
 
 /**
- * 🎮 InMemoryPlayerRepository
- * - Uses `PlayerList.ts` for player persistence.
- * - Ensures banned players are updated based on `BanList.ts`.
+ * 💾 In-Memory Player Repository
+ * - Stores players in memory with JSON persistence
+ * - Ideal for development & testing
  */
 export class InMemoryPlayerRepository implements IPlayerRepository {
-    /**
-     * 🔍 Find a player by email
-     */
-    async findByEmail(email: string): Promise<PlayerType | null> {
-        const players = await PlayerList.getAllPlayers();
-        return players.find(player => player.email === email) || null;
+    private players: Map<string, PlayerType> = new Map();
+
+    constructor() {
+        this.loadPlayers();
     }
 
     /**
-     * 🔍 Find a player by ID
+     * 🔄 Load players from JSON on startup
      */
+    private async loadPlayers(): Promise<void> {
+        const storedPlayers = await playerList.getAllPlayers();
+        storedPlayers.forEach(player => this.players.set(player.id, player));
+        console.log(`✅ Loaded ${this.players.size} players from storage.`);
+    }
+
     async findById(id: string): Promise<PlayerType | null> {
-        return await PlayerList.getPlayerById(id);
+        return this.players.get(id) || null;
     }
 
-    /**
-     * ✨ Create a new player
-     */
+    async findByEmail(email: string): Promise<PlayerType | null> {
+        return Array.from(this.players.values()).find(player => player.email === email) || null;
+    }
+
+    async findByGameId(gameId: string): Promise<PlayerType | null> {
+        return Array.from(this.players.values()).find(player => player.gameId === gameId) || null;
+    }
+
     async create(player: Omit<PlayerType, 'id'>): Promise<PlayerType> {
-        const newPlayer: PlayerType = {
-            id: uuidv4(),
-            ...player,
-            isBanned: false,
-            banReason: null,
-            bannedBy: null,
-            banUntil: null,
-        };
-        await PlayerList.addPlayer(newPlayer);
+        const id = uuidv4();
+        const newPlayer: PlayerType = { ...player, id };
+        this.players.set(id, newPlayer);
+        await playerList.savePlayer(newPlayer);
         return newPlayer;
     }
 
-    /**
-     * 🔄 Update an existing player
-     */
     async update(player: PlayerType): Promise<void> {
-        const allPlayers = await PlayerList.getAllPlayers();
-        const index = allPlayers.findIndex(p => p.id === player.id);
-        if (index !== -1) {
-            allPlayers[index] = player;
-            await PlayerList.storage.write(allPlayers);
+        if (this.players.has(player.id)) {
+            this.players.set(player.id, player);
+            await playerList.savePlayer(player);
         }
     }
 
-    /**
-     * 🚫 Ban a player
-     */
-    async banPlayer(playerId: string, reason: string, bannedBy: string, bannedUntil: Date | null): Promise<void> {
-        await BanList.banPlayer(playerId, reason, bannedBy, bannedUntil);
-        const player = await this.findById(playerId);
+    async banPlayer(playerId: string, reason: string, bannedBy: string, banUntil: Date | null): Promise<void> {
+        await banList.banPlayer(playerId, reason, bannedBy, banUntil);
+        const player = this.players.get(playerId);
         if (player) {
             player.isBanned = true;
             player.banReason = reason;
             player.bannedBy = bannedBy;
-            player.banUntil = bannedUntil;
-            await this.update(player);
+            player.banUntil = banUntil;
+            this.players.set(playerId, player);
+            await playerList.savePlayer(player);
         }
     }
 
-    /**
-     * ✅ Unban a player
-     */
     async unbanPlayer(playerId: string): Promise<void> {
-        await BanList.unbanPlayer(playerId);
-        const player = await this.findById(playerId);
+        await banList.unbanPlayer(playerId);
+        const player = this.players.get(playerId);
         if (player) {
             player.isBanned = false;
             player.banReason = null;
             player.bannedBy = null;
             player.banUntil = null;
-            await this.update(player);
+            this.players.set(playerId, player);
+            await playerList.savePlayer(player);
         }
     }
 
-    /**
-     * 🔍 Check if a player is banned
-     */
     async isPlayerBanned(playerId: string): Promise<boolean> {
-        return await BanList.isPlayerBanned(playerId);
+        return await banList.isPlayerBanned(playerId);
     }
 
-    /**
-     * 📜 Get all banned players
-     */
     async getBannedPlayers(): Promise<PlayerType[]> {
-        const bannedIds = await BanList.getBanList();
-        const allPlayers = await PlayerList.getAllPlayers();
-        return allPlayers.filter(player => bannedIds.includes(player.id));
+        const bannedIds = await banList.getBanList();
+        return Array.from(this.players.values()).filter(player => bannedIds.includes(player.id));
     }
 }
