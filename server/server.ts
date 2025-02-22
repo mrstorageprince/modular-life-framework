@@ -7,13 +7,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Import route handlers
-import authRoutes from './routes/auth.routes';
-import adminRoutes from './routes/admin.routes';
-import playerRoutes from './routes/player.routes';
-import factionRoutes from './routes/faction.routes';
+import adminRoutes from './routes/admin.routes'; // ✅ Only available route
 
-// Import middleware
-import { authMiddleware } from './middleware/authMiddleware';
+// TODO: Uncomment when these exist
+// import authRoutes from './routes/auth.routes';
+// import playerRoutes from './routes/player.routes';
+// import factionRoutes from './routes/faction.routes';
 
 const app = express();
 
@@ -26,14 +25,13 @@ app.use(express.urlencoded({ extended: true })); // Parses URL-encoded data
 app.use(cors()); // Enables Cross-Origin Resource Sharing
 app.use(morgan('dev')); // Logs HTTP requests in the console
 
-// 🔹 Apply authentication middleware globally to protect routes
-app.use(authMiddleware);
+// 🔹 Mount API routes (only keeping what exists)
+app.use('/admin', adminRoutes); // ✅ Admin routes (ban, unban, kick players)
 
-// 🔹 Mount API routes
-app.use('/auth', authRoutes); // Authentication routes (login, token refresh)
-app.use('/admin', adminRoutes); // Admin routes (ban, unban, kick players)
-app.use('/player', playerRoutes); // Player-specific routes (profile, game interactions)
-app.use('/faction', factionRoutes); // Faction management routes (create/join factions)
+// TODO: Uncomment when these exist
+// app.use('/auth', authRoutes); // Authentication routes (login, token refresh)
+// app.use('/player', playerRoutes); // Player-specific routes (profile, game interactions)
+// app.use('/faction', factionRoutes); // Faction management routes (create/join factions)
 
 // 🔹 Default root route (for health checks or server status)
 app.get('/', (req: Request, res: Response) => {

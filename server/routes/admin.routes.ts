@@ -1,9 +1,11 @@
 import { Router } from 'express';
-import { banPlayer, unbanPlayer } from '../controllers/admin.controller';
+import { addAdmin, removeAdmin, isAdmin, getAllAdmins } from '../controllers/admin.controller';
 
 const router = Router();
 
-router.post('/ban', banPlayer);
-router.post('/unban', unbanPlayer);
+router.post('/add', addAdmin);
+router.post('/remove', removeAdmin);
+router.get('/is-admin/:playerId', isAdmin);
+router.get('/list', getAllAdmins);
 
 export default router;

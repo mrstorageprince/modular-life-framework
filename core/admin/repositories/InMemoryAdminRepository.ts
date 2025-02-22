@@ -1,25 +1,36 @@
 import { IAdminRepository } from './IAdminRepository';
-import { AdminActionType } from '../model/AdminActionType';
-import * as banList from '../storage/banList';
+import { AdminList } from '../storage/adminList';
 
 /**
- * In-memory implementation of the admin repository.
- * Uses a JSON-based storage system for bans.
+ * 🛠 InMemoryAdminRepository
+ * - Uses `AdminList.ts` for admin storage.
  */
 export class InMemoryAdminRepository implements IAdminRepository {
-    async banPlayer(playerId: string, reason: string, bannedBy: string, bannedUntil: Date | null): Promise<void> {
-        await banList.banPlayer(playerId, reason, bannedBy, bannedUntil);
+    /**
+     * ✅ Add a player to the admin list
+     */
+    async addAdmin(playerId: string): Promise<void> {
+        await AdminList.addAdmin(playerId);
     }
 
-    async unbanPlayer(playerId: string): Promise<void> {
-        await banList.unbanPlayer(playerId);
+    /**
+     * ❌ Remove a player from the admin list
+     */
+    async removeAdmin(playerId: string): Promise<void> {
+        await AdminList.removeAdmin(playerId);
     }
 
-    async isPlayerBanned(playerId: string): Promise<boolean> {
-        return banList.isPlayerBanned(playerId);
+    /**
+     * 🔍 Check if a player is an admin
+     */
+    async isAdmin(playerId: string): Promise<boolean> {
+        return await AdminList.isAdmin(playerId);
     }
 
-    async getBannedPlayers(): Promise<string[]> {
-        return banList.getBanList();
+    /**
+     * 📜 Get a list of all admins
+     */
+    async getAllAdmins(): Promise<string[]> {
+        return await AdminList.getAdminList();
     }
 }

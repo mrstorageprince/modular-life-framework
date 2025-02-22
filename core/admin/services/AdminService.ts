@@ -1,24 +1,36 @@
-import { IAdminRepository } from '../repository/IAdminRepository';
+import { getAdminRepository } from '../../../server/factories/adminRepositoryFactory';
 
 /**
- * Handles administrative actions such as banning, unbanning, and kicking players.
+ * 🛠 AdminService - Handles admin actions like banning/unbanning players
  */
 export class AdminService {
-    private adminRepo: IAdminRepository;
+    private adminRepo = getAdminRepository();
 
-    constructor(adminRepo: IAdminRepository) {
-        this.adminRepo = adminRepo;
+    /**
+     * ✅ Add a new admin
+     */
+    async addAdmin(playerId: string): Promise<void> {
+        return this.adminRepo.addAdmin(playerId);
     }
 
-    async banPlayer(playerId: string, reason: string, bannedBy: string, bannedUntil: Date | null): Promise<void> {
-        await this.adminRepo.banPlayer(playerId, reason, bannedBy, bannedUntil);
+    /**
+     * ❌ Remove an admin
+     */
+    async removeAdmin(playerId: string): Promise<void> {
+        return this.adminRepo.removeAdmin(playerId);
     }
 
-    async unbanPlayer(playerId: string): Promise<void> {
-        await this.adminRepo.unbanPlayer(playerId);
+    /**
+     * 🔍 Check if a player is an admin
+     */
+    async isAdmin(playerId: string): Promise<boolean> {
+        return this.adminRepo.isAdmin(playerId);
     }
 
-    async isPlayerBanned(playerId: string): Promise<boolean> {
-        return this.adminRepo.isPlayerBanned(playerId);
+    /**
+     * 📜 Get all admins
+     */
+    async getAllAdmins(): Promise<string[]> {
+        return this.adminRepo.getAllAdmins();
     }
 }
